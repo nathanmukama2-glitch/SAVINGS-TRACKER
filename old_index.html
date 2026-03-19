@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Savings Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>💰 Monthly Savings Tracker</h2>
+        <p>Goal: 50,000 UGX per person</p>
+        
+        <div class="input-group">
+            <select id="userName">
+                <option value="Nathan">Nathan</option>
+                <option value="Brian">Brian</option>
+                <option value="Jackson">Jackson</option>
+            </select>
+            <input type="number" id="amount" placeholder="Enter Amount (UGX)">
+            <button onclick="addSaving()">Add Payment</button>
+        </div>
+
+        <div id="progress-container">
+            </div>
+
+        <button class="reset-btn" onclick="resetData()">Reset Month</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
