@@ -1,7 +1,6 @@
-// 1. YOUR GOOGLE WEB APP URL
 const scriptURL = 'https://script.google.com/macros/s/AKfycbxhN3L9KW3vFMsEzcAsuu7alI20FBNCAzH2OuR6jLsei1_3YgeT4batHo7qtGnUq2vA/exec';
 
-// 2. FUNCTION TO ADD A PAYMENT
+// 1. Send data to Google Sheets
 function addSaving() {
     const name = document.getElementById('userName').value;
     const amt = document.getElementById('amount').value;
@@ -11,57 +10,62 @@ function addSaving() {
         fetch(scriptURL, { 
             method: 'POST', 
             mode: 'no-cors', 
-            body: new URLSearchParams({
-                'NAME': name,
-                'AMOUNT': amt,
-                'MONTH': month
-            })
+            body: new URLSearchParams({ 'NAME': name, 'AMOUNT': amt, 'MONTH': month })
         })
         .then(() => {
             alert("Success! Payment recorded for " + name);
             document.getElementById('amount').value = ''; 
-            updateUI(); // Refresh the progress bars immediately
+            updateUI(); // Refresh the screen immediately
         })
-        .catch(error => {
-            console.error('Error!', error.message);
-            alert("Error: Check your internet connection.");
-        });
+        .catch(error => alert("Connection error. Try again."));
     } else {
-        alert("Please enter a valid amount.");
+        alert("Please enter an amount.");
     }
 }
 
-// 3. FUNCTION TO UPDATE PROGRESS BARS (FETCH TOTALS)
+// 2. Pull totals and history from Google Sheets
 async function updateUI() {
     const container = document.getElementById('progress-container');
-    container.innerHTML = '<p style="text-align:center;">Checking totals...</p>';
+    const historyTable = document.getElementById('payment-history');
+    
+    container.innerHTML = '<p style="text-align:center;">Updating totals...</p>';
     
     try {
         const response = await fetch(scriptURL);
-        const totals = await response.json();
+        const data = await response.json();
         
-        container.innerHTML = ''; // Clear loading text
-        
+        // Update Progress Bars
+        container.innerHTML = '';
+        const totals = data.totals;
         for (let name in totals) {
             let saved = totals[name];
-            let target = 50000;
-            let percent = (saved / target) * 100;
-            if (percent > 100) percent = 100;
-
+            let percent = Math.min((saved / 50000) * 100, 100);
             container.innerHTML += `
                 <div style="margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 8px;">
                     <strong>${name}</strong>: ${saved.toLocaleString()} / 50,000 UGX
                     <div style="background: #eee; height: 20px; border-radius: 10px; overflow: hidden; margin-top: 5px;">
                         <div style="width: ${percent}%; height: 100%; background: #4caf50; transition: width 0.5s;"></div>
                     </div>
-                </div>
-            `;
+                </div>`;
         }
+
+        // Update History Table
+        if (historyTable) {
+            historyTable.innerHTML = '';
+            data.history.reverse().slice(0, 5).forEach(row => {
+                historyTable.innerHTML += `
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${row.name}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${row.amount.toLocaleString()}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${new Date(row.date).toLocaleDateString()}</td>
+                    </tr>`;
+            });
+        }
+
     } catch (error) {
-        container.innerHTML = '<p>Could not load totals. Please refresh.</p>';
-        console.error('Fetch error:', error);
+        container.innerHTML = '<p>Error loading data. Refresh the page.</p>';
     }
 }
 
-// 4. LOAD TOTALS ON STARTUP
+// Start the app
 updateUI();
