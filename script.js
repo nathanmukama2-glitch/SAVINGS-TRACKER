@@ -1,106 +1,61 @@
-const scriptURL = 'https://script.google.com/macros/s/AKfycbxhN3L9KW3vFMsEzcAsuu7alI20FBNCAzH2OuR6jLsei1_3YgeT4batHo7qtGnUq2vA/exec';
+const GOAL = 5000000;
 
-// 1. Send data to Google Sheets
-function addSaving() {
+// Load data on start
+document.addEventListener('DOMContentLoaded', updateDisplay);
+
+function addPayment() {
     const name = document.getElementById('userName').value;
-    const amt = document.getElementById('amount').value;
-    const month = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+    const amount = parseInt(document.getElementById('userAmount').value);
+    const date = new Date();
 
-    if (amt > 0) {
-        fetch(scriptURL, { 
-            method: 'POST', 
-            mode: 'no-cors', 
-            body: new URLSearchParams({ 'NAME': name, 'AMOUNT': amt, 'MONTH': month })
-        })
-        .then(() => {
-            alert("Success! Payment recorded for " + name);
-            document.getElementById('amount').value = ''; 
-            updateUI(); // Refresh the screen immediately
-        })
-        .catch(error => alert("Connection error. Try again."));
-    } else {
-        alert("Please enter an amount.");
+    if (!name || !amount) {
+        alert("Please enter a name and amount.");
+        return;
     }
+
+    const newEntry = {
+        name: name,
+        amount: amount,
+        date: date.toISOString(), // Full timestamp
+        monthYear: `${date.getMonth() + 1}-${date.getFullYear()}` // For filtering
+    };
+
+    let history = JSON.parse(localStorage.getItem('savingsHistory')) || [];
+    history.push(newEntry);
+    localStorage.setItem('savingsHistory', JSON.stringify(history));
+
+    // Clear inputs and refresh
+    document.getElementById('userName').value = '';
+    document.getElementById('userAmount').value = '';
+    updateDisplay();
 }
 
-// 2. Pull totals and history from Google Sheets
-async function updateUI() {
-    const container = document.getElementById('progress-container');
-    const historyTable = document.getElementById('payment-history');
-    
-    container.innerHTML = '<p style="text-align:center;">Updating totals...</p>';
-    
-    try {
-        const response = await fetch(scriptURL);
-        const data = await response.json();
-        
-        // Update Progress Bars
-        container.innerHTML = '';
-        const totals = data.totals;
-        for (let name in totals) {
-            let saved = totals[name];
-            let percent = Math.min((saved / 50000) * 100, 100);
-            container.innerHTML += `
-                <div style="margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 8px;">
-                    <strong>${name}</strong>: ${saved.toLocaleString()} / 50,000 UGX
-                    <div style="background: #eee; height: 20px; border-radius: 10px; overflow: hidden; margin-top: 5px;">
-                        <div style="width: ${percent}%; height: 100%; background: #4caf50; transition: width 0.5s;"></div>
-                    </div>
-                </div>`;
+function updateDisplay() {
+    const history = JSON.parse(localStorage.getItem('savingsHistory')) || [];
+    const tableBody = document.getElementById('tableBody');
+    const now = new Date();
+    const currentMonthYear = `${now.getMonth() + 1}-${now.getFullYear()}`;
+
+    tableBody.innerHTML = '';
+    let monthlyTotal = 0;
+
+    // Filter and Display
+    history.forEach(entry => {
+        if (entry.monthYear === currentMonthYear) {
+            monthlyTotal += entry.amount;
+
+            let row = `<tr>
+                <td>${new Date(entry.date).toLocaleDateString()}</td>
+                <td>${entry.name}</td>
+                <td>${entry.amount.toLocaleString()}</td>
+            </tr>`;
+            tableBody.innerHTML = row + tableBody.innerHTML;
         }
-
-        // Update History Table
-        if (historyTable) {
-            historyTable.innerHTML = '';
-            data.history.reverse().slice(0, 5).forEach(row => {
-                historyTable.innerHTML += `
-                    <tr>
-                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${row.name}</td>
-                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${row.amount.toLocaleString()}</td>
-                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${new Date(row.date).toLocaleDateString()}</td>
-                    </tr>`;
-            });
-        }
-
-    } catch (error) {
-        container.innerHTML = '<p>Error loading data. Refresh the page.</p>';
-    }
-}
-
-// Start the app
-updateUI();async function updateUI() {
-    // ... (previous code for progress bars)
-
-    let grandTotalSum = 0;
-    
-    // Calculate total from all history records
-    data.history.forEach(row => {
-        grandTotalSum += row.amount;
     });
 
-    // Display the grand total at the top
-    document.getElementById('grand-total').innerText = grandTotalSum.toLocaleString() + " UGX";
-
-    // ... (rest of your history table code)
-}
-// Function to show the celebration
-function showCelebration(name) {
-    document.getElementById('congrats-text').innerText = "Congratulations " + name + "! You've reached your 50,000 UGX goal!";
-    document.getElementById('overlay').style.display = 'block';
-    document.getElementById('popup').classList.add('show');
-}
-
-function closePopup() {
-    document.getElementById('overlay').style.display = 'none';
-    document.getElementById('popup').classList.remove('show');
-}
-
-async function updateUI() {
-    // ... (keep your existing fetching code)
-    
-    // Inside your loop where you calculate percent:
-    if (saved >= 50000) {
-        // This will only trigger if they haven't been congratulated yet this session
-        console.log(name + " hit the goal!");
-    }
+    // Update Progress Bar
+    const percent = Math.min((monthlyTotal / GOAL) * 100, 100);
+    document.getElementById('progressBar').style.width = percent + '%';
+    document.getElementById('totalDisplay').innerText = 
+        `${monthlyTotal.toLocaleString()} UGX / ${GOAL.toLocaleString()} UGX`;
 }
