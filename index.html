@@ -25,6 +25,20 @@
             </div>
 
         <button class="reset-btn" onclick="resetData()">Reset Month</button>
+<div id="history-section" style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
+    <h3>Recent Payments</h3>
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+            <tr style="background-color: #f2f2f2; text-align: left;">
+                <th style="padding: 8px; border-bottom: 1px solid #ddd;">Name</th>
+                <th style="padding: 8px; border-bottom: 1px solid #ddd;">Amount</th>
+                <th style="padding: 8px; border-bottom: 1px solid #ddd;">Date</th>
+            </tr>
+        </thead>
+        <tbody id="payment-history">
+            </tbody>
+    </table>
+</div>
     </div>
     <script src="script.js"></script>
 </body>
