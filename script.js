@@ -68,4 +68,18 @@ async function updateUI() {
 }
 
 // Start the app
-updateUI();
+updateUI();async function updateUI() {
+    // ... (previous code for progress bars)
+
+    let grandTotalSum = 0;
+    
+    // Calculate total from all history records
+    data.history.forEach(row => {
+        grandTotalSum += row.amount;
+    });
+
+    // Display the grand total at the top
+    document.getElementById('grand-total').innerText = grandTotalSum.toLocaleString() + " UGX";
+
+    // ... (rest of your history table code)
+}
