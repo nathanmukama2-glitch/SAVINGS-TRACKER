@@ -83,3 +83,24 @@ updateUI();async function updateUI() {
 
     // ... (rest of your history table code)
 }
+// Function to show the celebration
+function showCelebration(name) {
+    document.getElementById('congrats-text').innerText = "Congratulations " + name + "! You've reached your 50,000 UGX goal!";
+    document.getElementById('overlay').style.display = 'block';
+    document.getElementById('popup').classList.add('show');
+}
+
+function closePopup() {
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('popup').classList.remove('show');
+}
+
+async function updateUI() {
+    // ... (keep your existing fetching code)
+    
+    // Inside your loop where you calculate percent:
+    if (saved >= 50000) {
+        // This will only trigger if they haven't been congratulated yet this session
+        console.log(name + " hit the goal!");
+    }
+}
