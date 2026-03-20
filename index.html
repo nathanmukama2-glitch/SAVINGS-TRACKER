@@ -107,14 +107,24 @@
     const goal = 50000;
 
     function updateProgressBar() {
-        fetch(scriptURL)
-            .then(response => response.json())
-            .then(data => {
-                // Update Bar
-                const total = data.total || 0;
-                const percent = Math.min((total / goal) * 100, 100);
-                document.getElementById('bar').style.width = percent + '%';
-                document.getElementById('total-display').innerText = `Total: ${total.toLocaleString()} / 50,000 UGX`;
+    fetch(scriptURL)
+    .then(response => response.json())
+    .then(data => {
+        // 1. Fill the Saved and Borrowed boxes
+        document.getElementById('total-saved').innerText = data.totalSaved.toLocaleString() + " UGX";
+        document.getElementById('total-borrowed').innerText = data.totalBorrowed.toLocaleString() + " UGX";
+        
+        // 2. Update the Progress Bar using the Cash left (netBalance)
+        const net = data.netBalance || 0;
+        const goal = 50000;
+        const percent = Math.min((net / goal) * 100, 100);
+        
+        document.getElementById('bar').style.width = percent + '%';
+        document.getElementById('total-display').innerText = `Cash in Hand: ${net.toLocaleString()} / 50,000 UGX`;
+
+        // ... keep your table history code below this ...
+    });
+}
 
                 // Update Table
                 const table = document.getElementById('historyTable');
