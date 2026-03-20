@@ -103,7 +103,7 @@
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyFluXRQ0wq40atIgXlG8D0buK6fYAkAR3T_X4jL2_durTNlCEiRVNWSZjKC2zqRD68/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxhN3L9KW3vFMsEzcAsuu7alI20FBNCAzH2OuR6jLsei1_3YgeT4batHo7qtGnUq2vA/exec';
     const form = document.forms['savingsForm'];
 
     form.addEventListener('submit', e => {
@@ -132,8 +132,8 @@
             .then(response => response.json())
             .then(data => {
                 // Update Balance Sheet Boxes
-                document.getElementById('total-saved').innerText = data.totalSaved.toLocaleString() + " UGX";
-                document.getElementById('total-borrowed').innerText = data.totalBorrowed.toLocaleString() + " UGX";
+                document.getElementById('total-saved').innerText = (data.totalSaved || 0).toLocaleString() + " UGX";
+                document.getElementById('total-borrowed').innerText = (data.totalBorrowed || 0).toLocaleString() + " UGX";
 
                 const net = data.netBalance || 0;
                 const goal = 50000;
@@ -144,24 +144,26 @@
 
                 // Update Table
                 const table = document.getElementById('historyTable');
-                table.innerHTML = "";
-                if(data.history) {
-                    data.history.forEach(item => {
-                        const color = item.amount < 0 ? "red" : "#27ae60";
-                        const row = `<tr>
-                            <td>${item.date}</td>
-                            <td><b>${item.member}</b></td>
-                            <td style="text-align: right; color: ${color}; font-weight: bold;">
-                                ${Number(item.amount).toLocaleString()} UGX
-                            </td>
-                        </tr>`;
-                        table.innerHTML += row;
-                    });
+                if (table) {
+                    table.innerHTML = "";
+                    if(data.history) {
+                        data.history.forEach(item => {
+                            const color = item.amount < 0 ? "red" : "#27ae60";
+                            const row = `<tr>
+                                <td>${item.date}</td>
+                                <td><b>${item.member}</b></td>
+                                <td style="text-align: right; color: ${color}; font-weight: bold;">
+                                    ${Number(item.amount).toLocaleString()} UGX
+                                </td>
+                            </tr>`;
+                            table.innerHTML += row;
+                        });
+                    }
                 }
-            });
+            })
+            .catch(err => console.error("Fetch error:", err));
     }
 
-    // Load data when page opens
     window.onload = updateProgressBar;
 </script>
 
