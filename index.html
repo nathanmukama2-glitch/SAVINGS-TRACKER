@@ -136,13 +136,13 @@
                 alert("Saved! Updating progress...");
                 form.reset();
                 btn.disabled = false;
-                btn.innerText = "Save to Google Sheets";
+                btn.innerText = "Save";
                 setTimeout(updateProgressBar, 2000); 
             })
             .catch(error => {
                 alert("Error saving data.");
                 btn.disabled = false;
-                btn.innerText = "Save to Google Sheets";
+                btn.innerText = "Save";
             });
     });
 </script>
