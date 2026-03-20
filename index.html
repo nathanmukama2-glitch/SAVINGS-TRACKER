@@ -16,6 +16,21 @@
         select, input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         .btn-add { width: 100%; padding: 14px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-add:disabled { background: #ccc; }
+        .then(data => {
+        const total = data.total || 0;
+        const goal = 50000;
+        const percent = Math.min((total / goal) * 100, 100);
+        
+        document.getElementById('bar').style.width = percent + '%';
+        document.getElementById('total-display').innerText = `Total: ${total.toLocaleString()} / 50,000 UGX`;
+
+        // --- ADD THIS ALERT SECTION ---
+        if (total >= goal) {
+            alert("🎉 CONGRATULATIONS! The 50,000 UGX Monthly Target has been reached!");
+        }
+        // ------------------------------
+
+        // ... rest of your code for the history table ...
         
         /* HISTORY TABLE STYLES */
         .history-section { margin-top: 25px; text-align: left; border-top: 1px solid #eee; padding-top: 15px; }
