@@ -47,7 +47,18 @@
     <div class="progress-box">
         <div id="bar"></div>
     </div>
-    <h3 id="total-display">Total: 0 / 50,000 UGX</h3>
+   <div style="display: flex; justify-content: space-around; background: #eef2f7; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #d1d9e6;">
+    <div style="text-align: center;">
+        <span style="font-size: 12px; color: #555; text-transform: uppercase;">Total Saved</span>
+        <div id="total-saved" style="font-weight: bold; color: #27ae60; font-size: 18px;">0 UGX</div>
+    </div>
+    <div style="text-align: center;">
+        <span style="font-size: 12px; color: #555; text-transform: uppercase;">Total Borrowed</span>
+        <div id="total-borrowed" style="font-weight: bold; color: #e74c3c; font-size: 18px;">0 UGX</div>
+    </div>
+</div>
+
+<h3 id="total-display" style="text-align: center; color: #2c3e50;">Cash in Hand: 0 / 50,000 UGX</h3>
     <form id="savingsForm">
     <label>Select Month:</label>
 <select name="Month" id="monthSelect">
