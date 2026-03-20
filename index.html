@@ -103,69 +103,66 @@
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyFluXRQ0wq40atIgXlG8D0buK6fYAkAR3T_X4jL2_durTNlCEiRVNWSZjKC2zqRD68/exec'; 
-    const goal = 50000;
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyFluXRQ0wq40atIgXlG8D0buK6fYAkAR3T_X4jL2_durTNlCEiRVNWSZjKC2zqRD68/exec';
+    const form = document.forms['savingsForm'];
+
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Saving...";
+
+        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+            .then(response => {
+                alert("Success! Data saved.");
+                form.reset();
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Save";
+                updateProgressBar();
+            })
+            .catch(error => {
+                console.error('Error!', error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Save";
+            });
+    });
 
     function updateProgressBar() {
-    fetch(scriptURL)
-    .then(response => response.json())
-    .then(data => {
-        // 1. Fill the Saved and Borrowed boxes
-        document.getElementById('total-saved').innerText = data.totalSaved.toLocaleString() + " UGX";
-        document.getElementById('total-borrowed').innerText = data.totalBorrowed.toLocaleString() + " UGX";
-        
-        // 2. Update the Progress Bar using the Cash left (netBalance)
-        const net = data.netBalance || 0;
-        const goal = 50000;
-        const percent = Math.min((net / goal) * 100, 100);
-        
-        document.getElementById('bar').style.width = percent + '%';
-        document.getElementById('total-display').innerText = `Cash in Hand: ${net.toLocaleString()} / 50,000 UGX`;
+        fetch(scriptURL)
+            .then(response => response.json())
+            .then(data => {
+                // Update Balance Sheet Boxes
+                document.getElementById('total-saved').innerText = data.totalSaved.toLocaleString() + " UGX";
+                document.getElementById('total-borrowed').innerText = data.totalBorrowed.toLocaleString() + " UGX";
 
-        // ... keep your table history code below this ...
-    });
-}
+                const net = data.netBalance || 0;
+                const goal = 50000;
+                const percent = Math.min((net / goal) * 100, 100);
+
+                document.getElementById('bar').style.width = percent + '%';
+                document.getElementById('total-display').innerText = `Cash in Hand: ${net.toLocaleString()} / 50,000 UGX`;
 
                 // Update Table
                 const table = document.getElementById('historyTable');
-                table.innerHTML = ""; 
+                table.innerHTML = "";
                 if(data.history) {
                     data.history.forEach(item => {
+                        const color = item.amount < 0 ? "red" : "#27ae60";
                         const row = `<tr>
                             <td>${item.date}</td>
                             <td><b>${item.member}</b></td>
-                            <td style="text-align: right;">${Number(item.amount).toLocaleString()} UGX</td>
+                            <td style="text-align: right; color: ${color}; font-weight: bold;">
+                                ${Number(item.amount).toLocaleString()} UGX
+                            </td>
                         </tr>`;
                         table.innerHTML += row;
                     });
                 }
-            })
-            .catch(error => console.error('Error fetching data:', error));
+            });
     }
 
+    // Load data when page opens
     window.onload = updateProgressBar;
-
-    const form = document.getElementById('savingsForm');
-    form.addEventListener('submit', e => {
-        e.preventDefault();
-        const btn = document.getElementById('submitBtn');
-        btn.disabled = true;
-        btn.innerText = "Saving...";
-
-        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-            .then(response => {
-                alert("Saved! Updating progress...");
-                form.reset();
-                btn.disabled = false;
-                btn.innerText = "Save";
-                setTimeout(updateProgressBar, 2000); 
-            })
-            .catch(error => {
-                alert("Error saving data.");
-                btn.disabled = false;
-                btn.innerText = "Save";
-            });
-    });
 </script>
 
 </body>
