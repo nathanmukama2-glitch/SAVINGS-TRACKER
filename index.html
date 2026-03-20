@@ -33,26 +33,24 @@
         <div id="bar"></div>
     </div>
     <h3 id="total-display">Total: 0 / 50,000 UGX</h3>
-    
     <form id="savingsForm">
-        <label>Select Month:</label>
-        <select name="Month" id="monthSelect">
-            <option value="March">March 2026</option>
-            <option value="April">April 2026</option>
-            <option value="May">May 2026</option>
-        </select>
+    <label>Select Month:</label>
+    <select **name="Month"** id="monthSelect">
+        <option value="March">March 2026</option>
+        ...
+    </select>
 
-        <label>Who is saving?</label>
-        <select name="Member" id="userSelect">
-            <option value="Brian">Brian</option>
-            <option value="Jackson">Jackson</option>
-            <option value="Nathan">Nathan</option>
-        </select>
-        
-        <input type="number" name="Amount" id="amountInput" placeholder="Enter Amount (e.g. 5000)" required>
-        
-        <button type="submit" class="btn-add" id="submitBtn">Save to Google Sheets</button>
-    </form>
+    <label>Who is saving?</label>
+    <select **name="Member"** id="userSelect">
+        <option value="Brian">Brian</option>
+        <option value="Jackson">Jackson</option>
+        <option value="Nathan">Nathan</option>
+    </select>
+    
+    <input type="number" **name="Amount"** id="amountInput" placeholder="Enter Amount" required>
+    
+    <button type="submit" class="btn-add" id="submitBtn">Save to Google Sheets</button>
+</form>
 
     <div class="history-section">
         <strong>Recent Activity:</strong>
