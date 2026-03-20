@@ -7,10 +7,20 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; max-width: 450px; margin: 20px auto; padding: 20px; background-color: #f8f9fa; }
         .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); text-align: center; border-top: 5px solid #27ae60; }
+        
+        /* THE PROGRESS BAR STYLES */
+        .progress-box { background: #e9ecef; border-radius: 20px; height: 25px; margin: 20px 0; overflow: hidden; border: 1px solid #ccc; }
+        #bar { background: #27ae60; height: 100%; width: 0%; transition: width 0.6s ease-in-out; }
+        #total-display { color: #27ae60; margin-bottom: 20px; }
+
         select, input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         .btn-add { width: 100%; padding: 14px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-add:disabled { background: #ccc; }
-        #status { margin-top: 15px; font-weight: bold; color: #27ae60; }
+        
+        /* HISTORY TABLE STYLES */
+        .history-section { margin-top: 25px; text-align: left; border-top: 1px solid #eee; padding-top: 15px; }
+        table { width: 100%; font-size: 14px; border-collapse: collapse; }
+        td { padding: 8px 0; border-bottom: 1px solid #f9f9f9; }
     </style>
 </head>
 <body>
@@ -18,6 +28,11 @@
 <div class="card">
     <h2>Target: 50,000 UGX</h2>
     <p>Monthly Savings Tracker</p>
+
+    <div class="progress-box">
+        <div id="bar"></div>
+    </div>
+    <h3 id="total-display">Total: 0 / 50,000 UGX</h3>
     
     <form id="savingsForm">
         <label>Select Month:</label>
@@ -39,33 +54,46 @@
         <button type="submit" class="btn-add" id="submitBtn">Save to Google Sheets</button>
     </form>
 
-    <div id="status"></div>
+    <div class="history-section">
+        <strong>Recent Activity:</strong>
+        <table id="historyTable">
+            </table>
+    </div>
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxhN3L9KW3vFMsEzcAsuu7alI20FBNCAzH2OuR6jLsei1_3YgeT4batHo7qtGnUq2vA/exec'; // Make sure your URL is here!
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxhN3L9KW3vFMsEzcAsuu7alI20FBNCAzH2OuR6jLsei1_3YgeT4batHo7qtGnUq2vA/exec'; 
     const goal = 50000;
 
-    // 1. Function to get the total from Google Sheets
     function updateProgressBar() {
         fetch(scriptURL)
             .then(response => response.json())
             .then(data => {
-                const total = data.total;
+                // Update Bar
+                const total = data.total || 0;
                 const percent = Math.min((total / goal) * 100, 100);
-                
-                // Update the UI
                 document.getElementById('bar').style.width = percent + '%';
-                document.getElementById('total-display').innerText = 
-                    `Total: ${total.toLocaleString()} / 50,000 UGX`;
+                document.getElementById('total-display').innerText = `Total: ${total.toLocaleString()} / 50,000 UGX`;
+
+                // Update Table
+                const table = document.getElementById('historyTable');
+                table.innerHTML = ""; 
+                if(data.history) {
+                    data.history.forEach(item => {
+                        const row = `<tr>
+                            <td>${item.date}</td>
+                            <td><b>${item.member}</b></td>
+                            <td style="text-align: right;">${Number(item.amount).toLocaleString()} UGX</td>
+                        </tr>`;
+                        table.innerHTML += row;
+                    });
+                }
             })
-            .catch(error => console.error('Error fetching total:', error));
+            .catch(error => console.error('Error fetching data:', error));
     }
 
-    // 2. Run the update when the page loads
     window.onload = updateProgressBar;
 
-    // 3. Handle Form Submission
     const form = document.getElementById('savingsForm');
     form.addEventListener('submit', e => {
         e.preventDefault();
@@ -79,11 +107,13 @@
                 form.reset();
                 btn.disabled = false;
                 btn.innerText = "Save to Google Sheets";
-                
-                // Update the bar immediately after saving
                 setTimeout(updateProgressBar, 2000); 
             })
-            .catch(error => alert("Error saving data."));
+            .catch(error => {
+                alert("Error saving data.");
+                btn.disabled = false;
+                btn.innerText = "Save to Google Sheets";
+            });
     });
 </script>
 
