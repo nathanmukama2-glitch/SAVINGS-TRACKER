@@ -52,10 +52,12 @@
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycby-VGXKPr5JiBzBIAFGr3qg-Ik0tq5ZtoFePtx36Rx3tP6Bjor0VDxZ7AQDiT7ClsMc0g/exec'; // <--- PASTE YOUR GOOGLE URL HERE
-    const form = document.getElementById('savingsForm');
-    const status = document.getElementById('status');
-    
+  // 1. DELETE ANY OTHER SCRIPTURL LINES EXCEPT THIS ONE:
+const scriptURL = 'https://script.google.com/macros/s/AKfycby-VGXKPr5JiBzBIAFGr3qg-Ik0tq5ZtoFePtx36Rx3tP6Bjor0VDxZ7AQDiT7ClsMc0g/exec'; 
+
+const form = document.getElementById('savingsForm');
+
+
     // Tracking variables
     let totalCash = 0;
     const memberTotals = { Nathan: 0, Brian: 0, Jackson: 0 };
