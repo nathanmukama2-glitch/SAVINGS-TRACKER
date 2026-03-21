@@ -1,20 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>The Optician Savings Tracker</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Optician Savings Tracker</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        .card { background: white; padding: 20px; border-radius: 8px; max-width: 400px; margin: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .card { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2, h3 { color: #1a73e8; text-align: center; margin-top: 0; }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { background: #28a745; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:hover { background: #218838; }
+        .summary-box { background: #e8f0fe; padding: 15px; border-radius: 10px; text-align: center; margin: 20px 0; border: 1px solid #d2e3fc; }
+        .progress-container { margin-bottom: 15px; }
+        .progress-bar { background: #eee; height: 10px; border-radius: 5px; overflow: hidden; }
+        .progress-fill { background: #28a745; height: 100%; width: 0%; transition: width 0.5s; }
+        #status { text-align: center; font-size: 14px; color: #666; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Group Savings Tracker</h2>
+    <h2>The Optician</h2>
+    <h3>Savings Tracker</h3>
+    
     <form id="savingsForm">
         <select name="member" required>
             <option value="">Select Member</option>
@@ -30,114 +39,105 @@
         </select>
 
         <input type="number" name="amount" placeholder="Amount (UGX)" required>
-        <input type="month" name="month" required>
+        <input type="month" name="month" required id="monthPicker">
         
-        <button type="submit" id="submitBtn">Save Entry</button>
+        <button type="submit" id="submitBtn">Save to Sheet</button>
     </form>
-    <hr>
-    <h3>Financial Summary</h3>
-    <div style="background: #e9ecef; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-        <strong>Cash at Hand: </strong><span id="cashAtHand">0</span> UGX
+
+    <div id="status">Syncing with Google...</div>
+
+    <div class="summary-box">
+        <strong>Cash at Hand</strong><br>
+        <span id="cashAtHand" style="font-size: 24px; color: #28a745;">0</span> <small>UGX</small>
     </div>
 
-    <h4>Member Progress (50k Target)</h4>
-    <div id="progressSection">
-        </div>
-
-    <h4>Recent Activity</h4>
-    <ul id="activityLog" style="font-size: 0.85em; color: #555;">
-        <li>No entries yet.</li>
-    </ul>
-    <p id="status" style="text-align:center; color: blue;"></p>
+    <h4>Monthly Progress (50k Target)</h4>
+    <div id="progressSection"></div>
 </div>
 
 <script>
-  // 1. DELETE ANY OTHER SCRIPTURL LINES EXCEPT THIS ONE:
-const scriptURL = 'https://script.google.com/macros/s/AKfycbyzYsPP6vF8150d1Vz2MNb3eDiB0jGDvurFp7Ov4mTCgDaDcNQXaC88hTRqNhJlTr5mog/exec'; 
+    // --- REPLACE THIS URL WITH YOUR NEW DEPLOYMENT URL ---
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwTf5F09wJSfKibcwk0iUSXmczyZ-gbre9llaDAmeGUwozf8q2p5iAK0o0NezedD_fH1A/exec';
+    
+    const form = document.getElementById('savingsForm');
+    const statusDiv = document.getElementById('status');
+    const monthInput = document.getElementById('monthPicker');
 
-const form = document.getElementById('savingsForm');
+    // Set default month to current
+    const now = new Date();
+    monthInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
+    // Load data when page opens
+    window.onload = fetchData;
 
-    // Tracking variables
-    let totalCash = 0;
-    const memberTotals = { Nathan: 0, Brian: 0, Jackson: 0 };
-
-    form.addEventListener('submit', e => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const name = formData.get('member');
-        const type = formData.get('type');
-        const amount = parseFloat(formData.get('amount'));
-
-        fetch(scriptURL, { method: 'POST', body: formData})
-            .then(response => {
-                alert("Data Sent to Google Sheets!");
-                updateLocalDashboard(name, type, amount);
-                form.reset();
+    function fetchData() {
+        statusDiv.innerText = "Fetching latest totals...";
+        fetch(scriptURL)
+            .then(res => res.json())
+            .then(data => {
+                calculateAndDisplay(data);
+                statusDiv.innerText = "Last updated: " + new Date().toLocaleTimeString();
             })
-            .catch(error => console.error('Error!', error.message));
-    });
+            .catch(err => {
+                statusDiv.innerText = "Offline Mode (Check Connection)";
+                console.error(err);
+            });
+    }
 
-    function updateLocalDashboard(name, type, amount) {
-        // Update Cash Logic
-        if (type === "Savings") {
-            totalCash += amount;
-            memberTotals[name] += amount;
-        } else {
-            totalCash -= amount; // Deduct for Expenses or Borrowing
-        }
+    function calculateAndDisplay(data) {
+        let totalCash = 0;
+        let members = { Nathan: 0, Brian: 0, Jackson: 0 };
 
-        // Update Text
+        data.forEach(item => {
+            let amt = parseFloat(item.amount) || 0;
+            if (item.type === "Savings") {
+                totalCash += amt;
+                if (members.hasOwnProperty(item.member)) members[item.member] += amt;
+            } else {
+                totalCash -= amt;
+            }
+        });
+
+        // Update Cash Display
         document.getElementById('cashAtHand').innerText = totalCash.toLocaleString();
 
-        // Update Activity Log
-        const log = document.getElementById('activityLog');
-        if (log.innerText.includes("No entries")) log.innerHTML = "";
-        const entry = document.createElement('li');
-        entry.innerText = `${name} added ${amount.toLocaleString()} (${type})`;
-        log.prepend(entry);
-        
-        // Function to load data from Google Sheets when the page opens
-function loadDataFromSheet() {
-    fetch(scriptURL)
-        .then(response => response.json())
-        .then(data => {
-            // Reset totals before calculating
-            totalCash = 0;
-            memberTotals = { Nathan: 0, Brian: 0, Jackson: 0 };
-            
-            data.forEach(entry => {
-                const amt = parseFloat(entry.amount);
-                if (entry.type === "Savings") {
-                    totalCash += amt;
-                    memberTotals[entry.member] += amt;
-                } else {
-                    totalCash -= amt;
-                }
-            });
-            
-            // Refresh the screen with real data from the sheet
-            renderDashboard(); 
-        });
-}
-
-// Run this automatically when the page loads
-window.onload = loadDataFromSheet;
-
-        // Update Progress Bar
+        // Update Progress Bars
         const progSection = document.getElementById('progressSection');
-        progSection.innerHTML = ""; // Clear and redraw
-        for (let member in memberTotals) {
-            let pct = (memberTotals[member] / 50000) * 100;
+        progSection.innerHTML = "";
+        for (let name in members) {
+            let pct = Math.min((members[name] / 50000) * 100, 100);
             progSection.innerHTML += `
-                <div style="margin-bottom:5px;">
-                    <small>${member}: ${memberTotals[member].toLocaleString()} / 50,000</small>
-                    <div style="background:#ddd; height:8px; border-radius:4px;">
-                        <div style="background:#28a745; width:${Math.min(pct, 100)}%; height:100%; border-radius:4px;"></div>
+                <div class="progress-container">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                        <span>${name}</span>
+                        <span>${members[name].toLocaleString()} / 50k</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${pct}%"></div>
                     </div>
                 </div>`;
         }
     }
+
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        statusDiv.innerText = "Sending data to Google...";
+        document.getElementById('submitBtn').disabled = true;
+
+        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+            .then(() => {
+                statusDiv.innerText = "✅ Saved Successfully!";
+                form.reset();
+                monthInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                fetchData(); // Refresh totals after saving
+            })
+            .catch(error => {
+                statusDiv.innerText = "❌ Error: " + error.message;
+            })
+            .finally(() => {
+                document.getElementById('submitBtn').disabled = false;
+            });
+    });
 </script>
 
 </body>
