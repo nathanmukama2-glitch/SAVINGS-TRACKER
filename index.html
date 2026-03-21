@@ -53,7 +53,7 @@
 
 <script>
   // 1. DELETE ANY OTHER SCRIPTURL LINES EXCEPT THIS ONE:
-const scriptURL = 'https://script.google.com/macros/s/AKfycby-VGXKPr5JiBzBIAFGr3qg-Ik0tq5ZtoFePtx36Rx3tP6Bjor0VDxZ7AQDiT7ClsMc0g/exec'; 
+const scriptURL = 'https://script.google.com/macros/s/AKfycbwBNGailOBgOdJESud79IMKVEWzpymet8xh3D_QTTNWV2eVJjSMPqIgmpvoe5PX6MjexQ/exec'; 
 
 const form = document.getElementById('savingsForm');
 
@@ -96,6 +96,33 @@ const form = document.getElementById('savingsForm');
         const entry = document.createElement('li');
         entry.innerText = `${name} added ${amount.toLocaleString()} (${type})`;
         log.prepend(entry);
+        
+        // Function to load data from Google Sheets when the page opens
+function loadDataFromSheet() {
+    fetch(scriptURL)
+        .then(response => response.json())
+        .then(data => {
+            // Reset totals before calculating
+            totalCash = 0;
+            memberTotals = { Nathan: 0, Brian: 0, Jackson: 0 };
+            
+            data.forEach(entry => {
+                const amt = parseFloat(entry.amount);
+                if (entry.type === "Savings") {
+                    totalCash += amt;
+                    memberTotals[entry.member] += amt;
+                } else {
+                    totalCash -= amt;
+                }
+            });
+            
+            // Refresh the screen with real data from the sheet
+            renderDashboard(); 
+        });
+}
+
+// Run this automatically when the page loads
+window.onload = loadDataFromSheet;
 
         // Update Progress Bar
         const progSection = document.getElementById('progressSection');
