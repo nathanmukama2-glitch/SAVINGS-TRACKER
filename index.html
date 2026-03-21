@@ -1,170 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brian, Jackson & Nathan - Monthly Savings</title>
+    <title>The Optician Savings Tracker</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; max-width: 450px; margin: 20px auto; padding: 20px; background-color: #f8f9fa; }
-        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); text-align: center; border-top: 5px solid #27ae60; }
-        
-        /* THE PROGRESS BAR STYLES */
-        .progress-box { background: #e9ecef; border-radius: 20px; height: 25px; margin: 20px 0; overflow: hidden; border: 1px solid #ccc; }
-        #bar { background: #27ae60; height: 100%; width: 0%; transition: width 0.6s ease-in-out; }
-        #total-display { color: #27ae60; margin-bottom: 20px; }
-
-        select, input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .btn-add { width: 100%; padding: 14px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-add:disabled { background: #ccc; }
-        .then(data => {
-        const total = data.total || 0;
-        const goal = 50000;
-        const percent = Math.min((total / goal) * 100, 100);
-        
-        document.getElementById('bar').style.width = percent + '%';
-        document.getElementById('total-display').innerText = `Total: ${total.toLocaleString()} / 50,000 UGX`;
-
-        // --- ADD THIS ALERT SECTION ---
-        if (total >= goal) {
-            alert("🎉 CONGRATULATIONS! The 50,000 UGX Monthly Target has been reached!");
-        }
-        // ------------------------------
-
-        // ... rest of your code for the history table ...
-        
-        /* HISTORY TABLE STYLES */
-        .history-section { margin-top: 25px; text-align: left; border-top: 1px solid #eee; padding-top: 15px; }
-        table { width: 100%; font-size: 14px; border-collapse: collapse; }
-        td { padding: 8px 0; border-bottom: 1px solid #f9f9f9; }
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .card { background: white; padding: 20px; border-radius: 8px; max-width: 400px; margin: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #218838; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Target: 50,000 UGX</h2>
-    <p>Monthly Savings Tracker</p>
-
-    <div class="progress-box">
-        <div id="bar"></div>
-    </div>
-   <div style="display: flex; justify-content: space-around; background: #eef2f7; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #d1d9e6;">
-    <div style="text-align: center;">
-        <span style="font-size: 12px; color: #555; text-transform: uppercase;">Total Saved</span>
-        <div id="total-saved" style="font-weight: bold; color: #27ae60; font-size: 18px;">0 UGX</div>
-    </div>
-    <div style="text-align: center;">
-        <span style="font-size: 12px; color: #555; text-transform: uppercase;">Total Borrowed</span>
-        <div id="total-borrowed" style="font-weight: bold; color: #e74c3c; font-size: 18px;">0 UGX</div>
-    </div>
-</div>
-
-<h3 id="total-display" style="text-align: center; color: #2c3e50;">Cash in Hand: 0 / 50,000 UGX</h3>
+    <h2>Group Savings Tracker</h2>
     <form id="savingsForm">
-    <label>Select Month:</label>
-<select name="Month" id="monthSelect">
-    <option value="January">January 2026</option>
-    <option value="February">February 2026</option>
-    <option value="March" selected>March 2026</option>
-    <option value="April">April 2026</option>
-    <option value="May">May 2026</option>
-    <option value="June">June 2026</option>
-    <option value="July">July 2026</option>
-    <option value="August">August 2026</option>
-    <option value="September">September 2026</option>
-    <option value="October">October 2026</option>
-    <option value="November">November 2026</option>
-    <option value="December">December 2026</option>
-</select>
+        <select name="member" required>
+            <option value="">Select Member</option>
+            <option value="Nathan">Nathan</option>
+            <option value="Brian">Brian</option>
+            <option value="Jackson">Jackson</option>
+        </select>
+        
+        <select name="type" required>
+            <option value="Savings">Savings</option>
+            <option value="Borrowed">Borrowed</option>
+            <option value="Expense">Expense</option>
+        </select>
 
-    <label>Who is saving?</label>
-   <select name="Member" id="userSelect">
-        <option value="Brian">Brian</option>
-        <option value="Jackson">Jackson</option>
-        <option value="Nathan">Nathan</option>
-    </select>
-        <label>Transaction Type:</label>
-<select name="Type" id="typeSelect">
-    <option value="Savings">Savings</option>
-    <option value="Expense">Expense (Used/No refund)</option>
-    <option value="Borrowed">Borrowed (Withdraw)</option>
-    <option value="Payback">Paying Back</option>
-</select>
-    
-   <input type="number" name="Amount" id="amountInput" ...>
-    
-    <button type="submit" class="btn-add" id="submitBtn">Save to Google Sheets</button>
-</form>
-
-    <div class="history-section">
-        <strong>Recent Activity:</strong>
-        <table id="historyTable">
-            </table>
-    </div>
+        <input type="number" name="amount" placeholder="Amount (UGX)" required>
+        <input type="month" name="month" required>
+        
+        <button type="submit" id="submitBtn">Save Entry</button>
+    </form>
+    <p id="status" style="text-align:center; color: blue;"></p>
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxhN3L9KW3vFMsEzcAsuu7alI20FBNCAzH2OuR6jLsei1_3YgeT4batHo7qtGnUq2vA/exec';
-    const form = document.forms['savingsForm'];
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbw4mzA7tnnaBiXfKoDwnWAEooCPfJDLanuxZax5xLE29-rx9npE4T9bGi1ZB8pFvW1smw/exec'; // <--- PASTE YOUR GOOGLE URL HERE
+    const form = document.getElementById('savingsForm');
+    const status = document.getElementById('status');
 
     form.addEventListener('submit', e => {
         e.preventDefault();
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-        submitBtn.innerText = "Saving...";
-
+        status.innerText = "Sending data...";
+        
         fetch(scriptURL, { method: 'POST', body: new FormData(form)})
             .then(response => {
-                alert("Success! Data saved.");
+                status.innerText = "✅ Successfully saved to Google Sheets!";
                 form.reset();
-                submitBtn.disabled = false;
-                submitBtn.innerText = "Save";
-                updateProgressBar();
             })
             .catch(error => {
-                console.error('Error!', error.message);
-                submitBtn.disabled = false;
-                submitBtn.innerText = "Save";
+                status.innerText = "❌ Error: " + error.message;
             });
     });
-
-    function updateProgressBar() {
-        fetch(scriptURL)
-            .then(response => response.json())
-            .then(data => {
-                // Update Balance Sheet Boxes
-                document.getElementById('total-saved').innerText = (data.totalSaved || 0).toLocaleString() + " UGX";
-                document.getElementById('total-borrowed').innerText = (data.totalBorrowed || 0).toLocaleString() + " UGX";
-
-                const net = data.netBalance || 0;
-                const goal = 50000;
-                const percent = Math.min((net / goal) * 100, 100);
-
-                document.getElementById('bar').style.width = percent + '%';
-                document.getElementById('total-display').innerText = `Cash in Hand: ${net.toLocaleString()} / 50,000 UGX`;
-
-                // Update Table
-                const table = document.getElementById('historyTable');
-                if (table) {
-                    table.innerHTML = "";
-                    if(data.history) {
-                        data.history.forEach(item => {
-                            const color = item.amount < 0 ? "red" : "#27ae60";
-                            const row = `<tr>
-                                <td>${item.date}</td>
-                                <td><b>${item.member}</b></td>
-                                <td style="text-align: right; color: ${color}; font-weight: bold;">
-                                    ${Number(item.amount).toLocaleString()} UGX
-                                </td>
-                            </tr>`;
-                            table.innerHTML += row;
-                        });
-                    }
-                }
-            })
-            .catch(err => console.error("Fetch error:", err));
-    }
-
-    window.onload = updateProgressBar;
 </script>
+
 </body>
 </html>
